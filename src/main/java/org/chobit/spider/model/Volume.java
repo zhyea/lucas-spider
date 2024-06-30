@@ -1,5 +1,7 @@
 package org.chobit.spider.model;
 
+import org.chobit.spider.model.content.Content;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -8,7 +10,7 @@ import java.util.List;
  *
  * @author robin
  */
-public class Volume {
+public class Volume<E> {
 
 
 	/**
@@ -20,7 +22,7 @@ public class Volume {
 	/**
 	 * 章节列表
 	 */
-	private final List<PageContent> chapters = new LinkedList<>();
+	private final List<Content<E>> chapters = new LinkedList<>();
 
 
 	public Volume() {
@@ -30,7 +32,7 @@ public class Volume {
 		this.name = name;
 	}
 
-	public void addChapter(PageContent chapter) {
+	public void addChapter(Content<E> chapter) {
 		this.chapters.add(chapter);
 	}
 
@@ -42,7 +44,7 @@ public class Volume {
 		this.name = name;
 	}
 
-	public List<PageContent> getChapters() {
+	public List<Content<E>> getChapters() {
 		return chapters;
 	}
 

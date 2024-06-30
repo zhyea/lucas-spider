@@ -30,7 +30,6 @@ public final class Config {
 	public static final int PROXY_PORT = getInt("proxy.port");
 
 
-
 	public static HttpHost proxy() {
 		return new HttpHost(PROXY_HOST, PROXY_PORT);
 	}

@@ -1,7 +1,7 @@
 package org.chobit.spider.process.transform;
 
 import org.chobit.spider.model.Anchor;
-import org.chobit.spider.model.PageContent;
+import org.chobit.spider.model.content.Content;
 import org.jsoup.nodes.Document;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author robin
  */
-public interface Transformer {
+public interface Transformer<E> {
 
 
 	/**
@@ -32,7 +32,7 @@ public interface Transformer {
 	 * @param parent  父级标签
 	 * @return 文章内容
 	 */
-	PageContent extract(Document docPost, String title, String parent);
+	Content<E> extract(Document docPost, String title, String parent);
 
 
 	/**

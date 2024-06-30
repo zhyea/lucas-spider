@@ -20,6 +20,9 @@ public final class Constants {
 	public static final String FLAG_IMG = "IMG";
 
 
+	public static final String FLAG_IMG_SRC = "src";
+
+
 	public static final String SELECTOR_PARAGRAPH = "p";
 
 

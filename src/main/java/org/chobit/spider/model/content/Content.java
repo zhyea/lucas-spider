@@ -1,17 +1,14 @@
-package org.chobit.spider.model;
+package org.chobit.spider.model.content;
 
 import java.util.LinkedList;
 import java.util.List;
-
-import static org.chobit.commons.constans.Symbol.EMPTY;
-
 
 /**
  * 网页内容
  *
  * @author robin
  */
-public class PageContent {
+public class Content<E> {
 
 
 	/**
@@ -35,7 +32,7 @@ public class PageContent {
 	/**
 	 * 内容
 	 */
-	private final List<String> lines = new LinkedList<>();
+	private final List<E> lines = new LinkedList<>();
 
 
 	/**
@@ -44,59 +41,70 @@ public class PageContent {
 	private String contentHtml;
 
 
-	public PageContent() {
+	public Content() {
 	}
 
-	public PageContent(String title) {
+
+	public Content(String title) {
 		this.title = title;
 	}
 
 
-	public void addLine(String line) {
+	public void addLine(E line) {
 		this.lines.add(line);
 	}
 
 
-	public String firstLine() {
+	public E firstLine() {
 		if (lines.isEmpty()) {
-			return EMPTY;
+			return null;
 		}
 		return lines.get(0);
 	}
+
 
 	public String getTitle() {
 		return title;
 	}
 
+
 	public void setTitle(String title) {
 		this.title = title;
 	}
+
 
 	public String getVolumeName() {
 		return volumeName;
 	}
 
+
 	public void setVolumeName(String volumeName) {
 		this.volumeName = volumeName;
 	}
+
 
 	public String getChapterName() {
 		return chapterName;
 	}
 
+
 	public void setChapterName(String chapterName) {
 		this.chapterName = chapterName;
 	}
 
-	public List<String> getLines() {
+
+	public List<E> getLines() {
 		return lines;
 	}
+
 
 	public String getContentHtml() {
 		return contentHtml;
 	}
 
+
 	public void setContentHtml(String contentHtml) {
 		this.contentHtml = contentHtml;
 	}
+
 }

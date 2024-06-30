@@ -1,7 +1,7 @@
 package org.chobit.spider.process.sink;
 
-import org.chobit.spider.model.PageContent;
 import org.chobit.spider.model.Volume;
+import org.chobit.spider.model.content.Content;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +19,7 @@ import static org.chobit.commons.utils.StrKit.isNotBlank;
  *
  * @author robin
  */
-public class TxtSink implements Sink {
+public class TxtSink implements Sink<String> {
 
 
 	private static final Logger logger = LoggerFactory.getLogger(TxtSink.class);
@@ -34,13 +34,13 @@ public class TxtSink implements Sink {
 
 
 	@Override
-	public void sink(List<PageContent> contents) {
+	public void sink(List<Content<String>> contents) {
 
-		List<Volume> volumes = tidyCatalog(contents);
+		List<Volume<String>> volumes = tidyCatalog(contents);
 
 		try (FileWriter writer = new FileWriter(path)) {
 			writer.write(new String(new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf}));
-			for (Volume v : volumes) {
+			for (Volume<String> v : volumes) {
 				writeVolume(v, writer);
 			}
 			writer.write(NEW_LINE + "END.");
@@ -50,12 +50,12 @@ public class TxtSink implements Sink {
 	}
 
 
-	private void writeVolume(Volume v, FileWriter writer) throws IOException {
+	private void writeVolume(Volume<String> v, FileWriter writer) throws IOException {
 		if (isNotBlank(v.getName())) {
 			writer.write(v.getName());
 			writer.write(NEW_LINE + NEW_LINE);
 		}
-		for (PageContent pc : v.getChapters()) {
+		for (Content<String> pc : v.getChapters()) {
 			if (pc.getLines().isEmpty()) {
 				continue;
 			}

@@ -1,6 +1,6 @@
 package org.chobit.spider.process.sink;
 
-import org.chobit.spider.model.PageContent;
+import org.chobit.spider.model.content.Content;
 import org.chobit.spider.model.Volume;
 
 import java.util.LinkedList;
@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author robin
  */
-public interface Sink {
+public interface Sink<E>{
 
 
 	/**
@@ -19,7 +19,7 @@ public interface Sink {
 	 *
 	 * @param contents 内容
 	 */
-	void sink(List<PageContent> contents);
+	void sink(List<Content<E>> contents);
 
 
 	/**
@@ -28,20 +28,20 @@ public interface Sink {
 	 * @param postList 内容
 	 * @return 整理好的结果
 	 */
-	default List<Volume> tidyCatalog(List<PageContent> postList) {
-		List<Volume> result = new LinkedList<>();
-		Volume tmp = null;
-		for (PageContent pc : postList) {
+	default List<Volume<E>> tidyCatalog(List<Content<E>> postList) {
+		List<Volume<E>> result = new LinkedList<>();
+		Volume<E> tmp = null;
+		for (Content<E> content : postList) {
 			// 首次需要
 			boolean needNew = (null == tmp);
 			// 切换新的卷需要
-			needNew = needNew || (null != pc.getVolumeName() && !pc.getVolumeName().equals(tmp.getName()));
+			needNew = needNew || (null != content.getVolumeName() && !content.getVolumeName().equals(tmp.getName()));
 			if (needNew) {
-				tmp = new Volume(pc.getVolumeName());
+				tmp = new Volume<>(content.getVolumeName());
 				result.add(tmp);
 			}
 
-			tmp.addChapter(pc);
+			tmp.addChapter(content);
 		}
 
 		return result;

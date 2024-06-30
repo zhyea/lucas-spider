@@ -2,8 +2,9 @@ package org.chobit.spider.process;
 
 import org.apache.http.HttpHost;
 import org.chobit.commons.http.HttpClient;
+import org.chobit.spider.except.WebPageObtainException;
 import org.chobit.spider.model.Anchor;
-import org.chobit.spider.model.PageContent;
+import org.chobit.spider.model.content.Content;
 import org.chobit.spider.process.sink.Sink;
 import org.chobit.spider.process.src.Source;
 import org.chobit.spider.process.transform.Transformer;
@@ -16,6 +17,7 @@ import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.chobit.commons.utils.StrKit.isBlank;
 import static org.chobit.commons.utils.StrKit.isNotBlank;
 import static org.chobit.spider.Config.proxy;
 
@@ -24,7 +26,7 @@ import static org.chobit.spider.Config.proxy;
  *
  * @author robin
  */
-public class SpiderProcessor {
+public class SpiderProcessor<E> {
 
 
 	private static final Logger logger = LoggerFactory.getLogger(SpiderProcessor.class);
@@ -32,21 +34,21 @@ public class SpiderProcessor {
 
 	private final Source source;
 
-	private final Transformer transformer;
+	private final Transformer<E> transformer;
 
-	private final Sink sink;
+	private final Sink<E> sink;
 
 	private int retry = 6;
 
 
-	public SpiderProcessor(Source source, Transformer transformer, Sink sink) {
+	public SpiderProcessor(Source source, Transformer<E> transformer, Sink<E> sink) {
 		this.source = source;
 		this.transformer = transformer;
 		this.sink = sink;
 	}
 
 
-	public SpiderProcessor(Source source, Transformer transformer, Sink sink, int retry) {
+	public SpiderProcessor(Source source, Transformer<E> transformer, Sink<E> sink, int retry) {
 		this(source, transformer, sink);
 		this.retry = retry;
 	}
@@ -57,14 +59,14 @@ public class SpiderProcessor {
 
 		Document docIndex = null;
 		if (isNotBlank(source.indexUrl())) {
-			docIndex = obtainHtmlDocument(source.indexUrl(), charset);
+			docIndex = obtainHtmlDocument(source.indexUrl(), charset, source.useProxy());
 		}
 		List<Anchor> anchors = transformer.postAnchors(docIndex, source.baseUrl());
 
-		List<PageContent> contents = new LinkedList<>();
+		List<Content<E>> contents = new LinkedList<>();
 		for (Anchor anchor : anchors) {
-			Document docPost = obtainHtmlDocument(anchor.getUrl(), charset);
-			PageContent content = transformer.extract(docPost, anchor.getName(), anchor.getParent());
+			Document docPost = obtainHtmlDocument(anchor.getUrl(), charset, source.useProxy());
+			Content<E> content = transformer.extract(docPost, anchor.getName(), anchor.getParent());
 			// 检查各行是否需要删除
 			content.getLines().removeIf(this::toDel);
 			// 内容为空时不做写入
@@ -78,9 +80,9 @@ public class SpiderProcessor {
 	}
 
 
-	private boolean toDel(String line) {
+	private boolean toDel(E line) {
 		for (String s : source.blacklist()) {
-			if (line.contains(s)) {
+			if (String.valueOf(line).contains(s)) {
 				return true;
 			}
 		}
@@ -88,16 +90,26 @@ public class SpiderProcessor {
 	}
 
 
-	public Document obtainHtmlDocument(String url, Charset charset) {
+	public Document obtainHtmlDocument(String url, Charset charset, boolean useProxy) {
 		HttpHost proxy = null;
-		if (source.useProxy()) {
+		if (useProxy) {
 			proxy = proxy();
 		}
 		int count = 0;
 		while (count < retry) {
 			try {
 				byte[] bytes = HttpClient.getForBytes(url, proxy);
-				return Jsoup.parse(new String(bytes, charset));
+
+				if (null == bytes) {
+					throw new WebPageObtainException(url);
+				}
+
+				String content = new String(bytes, charset);
+				if (isBlank(content)) {
+					throw new WebPageObtainException(url);
+				}
+
+				return Jsoup.parse(content);
 			} catch (RuntimeException e) {
 				if (count > retry) {
 					logger.error("obtain html document error, url:{}", url, e);
